@@ -3,12 +3,14 @@ import torch
 from eval import MSSSIM_Loss
 from torchvision import transforms
 from PIL import Image
+import random
+import imageio.v2 as imageio  # Updated import statement
+import os
 
 def scale(x):
     return (x - x.min()) / (x.max() - x.min())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(device)
 
 testImg = Image.open('testImages/flowerField.jpg')
 testImg = transforms.ToTensor()(testImg).unsqueeze(0).to(device)
@@ -32,4 +34,32 @@ plt.xlabel('Standard Deviation')
 plt.ylabel('MSSSIM Loss')
 plt.title('MSSSIM Loss vs. Noise Standard Deviation for Different Means')
 plt.legend()
-plt.show()
+plt.savefig('msssim_loss_plot.png')  # Save the plot
+
+# Randomly select a mean and standard deviation
+random_mean = random.choice(means).item()
+random_sd = random.choice(sds).item()
+
+# Create a list to store the noisy images
+noisy_images = []
+
+# Generate noisy images with increasing standard deviation
+for sd in sds:
+    noisy_img = scale(testImg + random_mean + torch.randn_like(testImg) * sd)
+    noisy_img_pil = transforms.ToPILImage()(noisy_img.squeeze().cpu())
+    # Add text to the image to show mean and sd
+    plt.figure()
+    plt.imshow(noisy_img_pil)
+    plt.title(f'Mean = {random_mean}, SD = {sd.item()}')
+    plt.axis('off')
+    temp_file = 'temp_noisy_image.png'
+    plt.savefig(temp_file)
+    plt.close()
+    noisy_images.append(imageio.imread(temp_file))
+    os.remove(temp_file)  # Delete the temporary file
+
+# Save the images as a GIF
+gif_path = 'noisy_images.gif'
+imageio.mimsave(gif_path, noisy_images, duration=0.5)
+
+print(f'GIF saved at {gif_path}')
