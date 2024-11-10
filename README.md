@@ -8,5 +8,6 @@ Team members:
 
 ## Behavior of the MS-SSIM Loss
 
-![Noise Images](noise_images.gif)
-![MS-SSIM Loss Plot](msssim_loss_plot.png)
+![Noise Images](./noisy_images.gif "Noise Images")
+![MS-SSIM Loss Plot](./msssim_loss_plot.png "MS-SSIM Loss Plot")
+
