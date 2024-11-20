@@ -4,7 +4,9 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from torchvision import datasets
 from torch.utils.data import DataLoader, Subset
+from torchvision.transforms import ToTensor
 import matplotlib.pyplot as plt
+from eval import MSSSIM_Loss
 
 # Squeeze-and-Excitation Block
 class SEBlock(nn.Module):
@@ -55,7 +57,9 @@ class DnCNN(nn.Module):
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):
-        return self.model(x)
+        x = self.model(x)
+        x = nn.Sigmoid()(x)
+        return x
 
 # Function to add noise to images(temp), can be replaced with the actual dataset
 def add_noise(images, noise_factor=0.1):
@@ -70,6 +74,7 @@ def train(model, dataloader, optimizer, criterion, num_epochs=5):
         for data in dataloader:
             optimizer.zero_grad()
             clean_images, _ = data
+            clean_images = clean_images.to(device)
             noisy_images = add_noise(clean_images)
             output = model(noisy_images)
             loss = criterion(output, clean_images)
@@ -86,6 +91,7 @@ def visualize_results(model, num_images=3):  # Reduced to visualize 3 images
 
     plt.figure(figsize=(15, 5))
     for i, (clean_image, _) in enumerate(test_loader):
+        clean_image = clean_image.to(device)
         if i >= num_images:
             break
         noisy_image = add_noise(clean_image)
@@ -94,25 +100,26 @@ def visualize_results(model, num_images=3):  # Reduced to visualize 3 images
 
         # Plotting
         plt.subplot(3, num_images, i + 1)
-        plt.imshow(clean_image[0].permute(1, 2, 0).numpy())
+        plt.imshow(clean_image[0].permute(1, 2, 0).to("cpu").numpy())
         plt.title("Clean Image")
         plt.axis('off')
 
         plt.subplot(3, num_images, i + 1 + num_images)
-        plt.imshow(noisy_image[0].permute(1, 2, 0).numpy())
+        plt.imshow(noisy_image[0].permute(1, 2, 0).to("cpu").numpy())
         plt.title("Noisy Image")
         plt.axis('off')
 
         plt.subplot(3, num_images, i + 1 + 2 * num_images)
-        plt.imshow(denoised_image[0].permute(1, 2, 0).clamp(0, 1).numpy())
+        plt.imshow(denoised_image[0].permute(1, 2, 0).to("cpu").numpy())
         plt.title("Denoised Image")
         plt.axis('off')
 
-    plt.show()
+    plt.show(block=True)
 
 # Main function to run everything
 if __name__ == "__main__":
     # Hyperparameters(require further tuning afterwards)
+    device = torch.device()
     batch_size = 64
     num_epochs = 5 
     learning_rate = 0.001
@@ -120,7 +127,6 @@ if __name__ == "__main__":
     # Data loading
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     
     # can be replaced with the actual dataset
@@ -132,8 +138,8 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
 
     # Model, criterion, and optimizer
-    model = DnCNN()
-    criterion = nn.MSELoss()
+    model = DnCNN().to(device)
+    criterion = MSSSIM_Loss(window_size=2).to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Train the model
