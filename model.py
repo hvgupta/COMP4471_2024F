@@ -119,7 +119,7 @@ def visualize_results(model, num_images=3):  # Reduced to visualize 3 images
 # Main function to run everything
 if __name__ == "__main__":
     # Hyperparameters(require further tuning afterwards)
-    device = torch.device()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     batch_size = 64
     num_epochs = 5 
     learning_rate = 0.001
