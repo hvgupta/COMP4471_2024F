@@ -2,7 +2,6 @@ import torch
 from torch import nn
 from eval import *
 
-
 class Discriminator(nn.Module):
     def __init__(self,numChannels:int):
         super(Discriminator,self).__init__()

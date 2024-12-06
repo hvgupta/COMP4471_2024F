@@ -78,6 +78,7 @@ if __name__ == "__main__":
         transforms.ToTensor(),
     ])
     
+    
     # can be replaced with the actual dataset
     train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
 
