@@ -166,3 +166,4 @@ cython_debug/
 data/
 
 test.py
+SIDD_Small_sRGB_Only/*
