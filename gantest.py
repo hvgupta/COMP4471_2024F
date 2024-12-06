@@ -1,3 +1,6 @@
+from GAN import *
+from eval import *
+
 import torch.optim as optim
 import torchvision.transforms as transforms
 from torchvision import datasets
@@ -5,12 +8,8 @@ from torch.utils.data import DataLoader, Subset
 from torchvision.transforms import ToTensor
 import matplotlib.pyplot as plt
 
-from DnCNN import *
-from eval import MSSSIM_Loss
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Squeeze-and-Excitation Block
-
-# Function to add noise to images(temp), can be replaced with the actual dataset
 def add_noise(images, noise_factor=0.1):
     noisy_images = images + noise_factor * torch.randn_like(images)
     noisy_images = torch.clamp(noisy_images, 0., 1.)
@@ -64,35 +63,3 @@ def visualize_results(model, num_images=3):  # Reduced to visualize 3 images
         plt.axis('off')
 
     plt.show(block=True)
-
-# Main function to run everything
-if __name__ == "__main__":
-    # Hyperparameters(require further tuning afterwards)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    batch_size = 64
-    num_epochs = 5 
-    learning_rate = 0.001
-
-    # Data loading
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-    ])
-    
-    # can be replaced with the actual dataset
-    train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-
-    # Use a subset of the training dataset for faster training
-    indices = list(range(0, 1000))  # Use only the first 1000 samples
-    train_subset = Subset(train_dataset, indices)
-    train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
-
-    # Model, criterion, and optimizer
-    model = DnCNN().to(device)
-    criterion = MSSSIM_Loss(window_size=2).to(device)
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
-    # Train the model
-    train(model, train_loader, optimizer, criterion, num_epochs=num_epochs)
-
-    # Visualize results
-    visualize_results(model)
