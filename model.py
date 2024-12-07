@@ -73,8 +73,8 @@ if __name__ == "__main__":
     # Hyperparameters(require further tuning afterwards)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     batch_size = 20
-    num_epochs = 5 
-    learning_rate = 0.001
+    num_epochs = 10 
+    learning_rate = 3e-4
 
     # Data loading
     transform = transforms.Compose([
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     # Model, criterion, and optimizer
     model = DnCNN().to(device)
-    criterion = nn.MSELoss()
+    criterion = MSSSIM_Loss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Train the model

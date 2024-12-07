@@ -7,7 +7,7 @@ import os
 
 cleanImage = []
 transformer = transforms.Compose(
-    [Resize((220,220)),
+    [Resize((128,128)),
     ToTensor()
     ]
 )
