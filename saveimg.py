@@ -1,14 +1,15 @@
 import torch
 import torchvision.transforms as transforms
-from torchvision.transforms import PILToTensor, Resize
+from torchvision.transforms import Resize, ToTensor
 from PIL import Image
 import os
 
 
 cleanImage = []
 transformer = transforms.Compose(
-    [Resize((256,256)),
-    PILToTensor()]
+    [Resize((220,220)),
+    ToTensor()
+    ]
 )
 
 imgDir = "./SIDD_Small_sRGB_Only/Data"
